@@ -1,10 +1,15 @@
-Absolutely. Think of Kafka as a **large distributed warehouse**:
+# Topics, Partitions & Broker all together
+
+Think of Kafka as a **large distributed warehouse**:
 
 * **Broker** = The physical warehouse/server that stores data.
 * **Topic** = A named category/stream inside Kafka where related messages go.
 * **Partition** = A separate lane/section inside a topic where messages are actually stored.
 
 ### 1. High-level architecture
+
+<img width="1589" height="749" alt="image" src="https://github.com/user-attachments/assets/0d4e1844-b1dc-4e64-b290-0bf798d03b6c" />
+
 
 ```text
                          APACHE KAFKA CLUSTER
