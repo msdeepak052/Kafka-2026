@@ -122,7 +122,9 @@ Record
 
 ---
 
+<img width="1844" height="1013" alt="image" src="https://github.com/user-attachments/assets/4b071343-36be-4964-b94d-151f1175ea74" />
 
+<img width="1844" height="1013" alt="image" src="https://github.com/user-attachments/assets/c1aa4488-3915-48fe-8374-678c1b59979f" />
 
 ---
 # 4. What Does a Producer Actually Send?
