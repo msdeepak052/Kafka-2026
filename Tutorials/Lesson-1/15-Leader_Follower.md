@@ -59,6 +59,11 @@ P0 Follower → Broker 3
 
 <img width="772" height="546" alt="image" src="https://github.com/user-attachments/assets/e259c26d-97eb-46e6-a1e7-f68a7dcbf55a" />
 
+<img width="1346" height="73" alt="image" src="https://github.com/user-attachments/assets/051bb894-2471-44e8-b353-aea1e1381966" />
+
+<img width="523" height="573" alt="image" src="https://github.com/user-attachments/assets/62594551-679d-4faf-b576-400573a5179d" />
+
+
 ---
 
 # 2. Easy Analogy 🏫
