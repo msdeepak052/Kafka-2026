@@ -10,6 +10,8 @@
 * It tells us the **position of a record in that partition**.
 * Kafka uses offsets so consumers can keep track of **how far they have read**.
 
+<img width="1788" height="1016" alt="image" src="https://github.com/user-attachments/assets/b94f64b6-3b36-4262-b63a-753078b028a0" />
+
 ### Simple definition
 
 > **Offset = The position/sequence number of a record inside a Kafka partition.**
@@ -1216,8 +1218,6 @@ as long as the records still exist.
                           ▼
                    __consumer_offsets
 ```
-
-<img width="1788" height="980" alt="image" src="https://github.com/user-attachments/assets/21cd9105-947c-4d3e-a50b-138593d2e2cd" />
 
 
 And the operational chain you should remember:
