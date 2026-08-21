@@ -122,6 +122,9 @@ Record
 
 ---
 
+
+
+---
 # 4. What Does a Producer Actually Send?
 
 Suppose your application generates:
