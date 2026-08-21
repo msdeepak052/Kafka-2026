@@ -34,6 +34,11 @@ We'll focus specifically on **what a Kafka Consumer is and how it reads data**, 
 > **Kafka Consumer = An application/process that reads records from Kafka topic partitions.**
 
 ---
+<img width="1844" height="1013" alt="image" src="https://github.com/user-attachments/assets/8081c5d3-1414-4f60-923e-32364da3a7e2" />
+
+
+
+---
 
 # 2. Easy Analogy 📦
 
