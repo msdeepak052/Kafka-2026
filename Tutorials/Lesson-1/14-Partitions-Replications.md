@@ -42,6 +42,10 @@ That's where **partition replication** comes in.
 
 > **Partition replication means maintaining multiple copies of each partition on different Kafka brokers.**
 
+<img width="736" height="391" alt="image" src="https://github.com/user-attachments/assets/7fcfdaef-3ce3-4413-8552-9a22c6ed9ce5" />
+
+<img width="656" height="486" alt="image" src="https://github.com/user-attachments/assets/77b600eb-713d-4143-8c70-cc2c9964957a" />
+
 ---
 
 # 2. Easy Analogy 🏦
