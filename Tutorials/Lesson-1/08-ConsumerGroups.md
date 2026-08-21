@@ -44,6 +44,9 @@ I’ll keep this explanation **only around Consumer Groups** and the concepts yo
 
 <img width="1227" height="803" alt="image" src="https://github.com/user-attachments/assets/b5dbebe1-82c4-454b-887d-cdbf5b36c7c8" />
 
+<img width="1844" height="1013" alt="image" src="https://github.com/user-attachments/assets/0cafcd2a-bc10-4044-80e1-c7325d7b9f80" />
+
+
 
 ---
 
