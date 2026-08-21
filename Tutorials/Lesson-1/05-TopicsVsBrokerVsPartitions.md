@@ -10,6 +10,10 @@ Think of Kafka as a **large distributed warehouse**:
 
 <img width="1589" height="749" alt="image" src="https://github.com/user-attachments/assets/0d4e1844-b1dc-4e64-b290-0bf798d03b6c" />
 
+<img width="789" height="395" alt="image" src="https://github.com/user-attachments/assets/ee3c87ad-2e39-4023-84f1-68511816acdb" />
+
+<img width="985" height="255" alt="image" src="https://github.com/user-attachments/assets/fe62b5fe-c098-48ca-8906-dc1b8f9ba518" />
+
 
 ```text
                          APACHE KAFKA CLUSTER
