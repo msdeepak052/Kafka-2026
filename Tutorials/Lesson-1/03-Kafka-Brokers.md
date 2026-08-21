@@ -475,6 +475,9 @@ For modern Kafka administration, you should definitely understand **KRaft**, bec
 
 # 13. Broker Failure Scenario
 
+<img width="1844" height="1013" alt="image" src="https://github.com/user-attachments/assets/56b2d858-b0ca-45ac-97a6-5340faee7c77" />
+
+
 Suppose:
 
 ```text
