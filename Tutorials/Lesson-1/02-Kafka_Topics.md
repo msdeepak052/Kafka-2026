@@ -200,6 +200,9 @@ Now applications can subscribe to only the relevant topic.
 
 # 5. Real-World Example
 
+<img width="1788" height="980" alt="image" src="https://github.com/user-attachments/assets/3ce3009f-c7cc-41e7-b2b6-89bdd22c6d1b" />
+
+
 Imagine an e-commerce platform.
 
 Different events are generated:
