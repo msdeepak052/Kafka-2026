@@ -1,4 +1,4 @@
-# 16. Leader & Follower Brokers in Kafka
+# 15. Leader & Follower Brokers in Kafka
 
 This comes **directly after Partition Replication**, so let's build only on what you've learned.
 
@@ -54,6 +54,10 @@ P0 Leader   → Broker 1
 P0 Follower → Broker 2
 P0 Follower → Broker 3
 ```
+
+<img width="1143" height="82" alt="image" src="https://github.com/user-attachments/assets/208a2af7-7466-4122-bb03-e21e060f881f" />
+
+<img width="772" height="546" alt="image" src="https://github.com/user-attachments/assets/e259c26d-97eb-46e6-a1e7-f68a7dcbf55a" />
 
 ---
 
