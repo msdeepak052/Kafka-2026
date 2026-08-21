@@ -42,6 +42,9 @@ I’ll keep this explanation **only around Consumer Groups** and the concepts yo
 
 > **Consumer Group = A set of consumers working together to consume the partitions of a Kafka topic.**
 
+<img width="1227" height="803" alt="image" src="https://github.com/user-attachments/assets/b5dbebe1-82c4-454b-887d-cdbf5b36c7c8" />
+
+
 ---
 
 # 2. Easy Analogy 🏭
