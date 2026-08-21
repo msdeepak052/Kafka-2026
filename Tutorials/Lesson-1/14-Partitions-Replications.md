@@ -46,6 +46,9 @@ That's where **partition replication** comes in.
 
 <img width="656" height="486" alt="image" src="https://github.com/user-attachments/assets/77b600eb-713d-4143-8c70-cc2c9964957a" />
 
+<img width="1844" height="1013" alt="image" src="https://github.com/user-attachments/assets/27a21399-cd42-48b9-9a31-0b4d9a59a2ea" />
+
+
 ---
 
 # 2. Easy Analogy 🏦
