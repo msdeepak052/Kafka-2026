@@ -1217,6 +1217,9 @@ as long as the records still exist.
                    __consumer_offsets
 ```
 
+<img width="1788" height="980" alt="image" src="https://github.com/user-attachments/assets/21cd9105-947c-4d3e-a50b-138593d2e2cd" />
+
+
 And the operational chain you should remember:
 
 > **Partition → Offset → Consumer Position → Commit → Consumer Lag → Replay/Recovery**
