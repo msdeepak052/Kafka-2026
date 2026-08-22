@@ -54,6 +54,10 @@ Similarly:
 
 ---
 
+<img width="1608" height="913" alt="image" src="https://github.com/user-attachments/assets/93d5633e-f350-404a-8533-1fa1fcc810ce" />
+
+<img width="1608" height="913" alt="image" src="https://github.com/user-attachments/assets/77d9aba9-d980-4a82-b64b-1387b52bd416" />
+
 ## 4. Real Production Example
 
 ### 3-node ensemble
