@@ -82,6 +82,7 @@ This is one of the major reasons Kafka clusters are normally deployed with multi
 
 <img width="1617" height="916" alt="image" src="https://github.com/user-attachments/assets/6bb625cd-fdb0-4287-93b5-5891e41524e4" />
 
+<img width="1617" height="916" alt="image" src="https://github.com/user-attachments/assets/4adc2008-cd96-496a-adc4-91b713a87194" />
 
 ---
 
