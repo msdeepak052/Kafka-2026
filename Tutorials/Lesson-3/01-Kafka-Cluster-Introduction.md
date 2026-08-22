@@ -70,6 +70,9 @@ Kafka is similar:
 
 Each broker handles a portion of the Kafka workload.
 
+<img width="1623" height="874" alt="image" src="https://github.com/user-attachments/assets/3bcea75f-2920-4927-9fb9-81a444c18ec7" />
+
+
 ---
 
 # 3. Why Do We Need a Cluster?
