@@ -1,5 +1,8 @@
 # Hands-On: Changing Kafka Broker Configuration (Static & Dynamic) + Advanced Configuration
 
+<img width="1760" height="970" alt="image" src="https://github.com/user-attachments/assets/e44f2b8f-e6ca-4d87-8763-91a4d1c0916d" />
+
+
 > **Course items covered:** "43. Hands-On: How to change a Kafka Broker Configuration" and "44. Advanced Kafka Configuration."
 
 For a **Senior Platform Engineer**, don't think of "changing a broker config" as:
