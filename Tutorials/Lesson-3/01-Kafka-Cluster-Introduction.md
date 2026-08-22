@@ -72,6 +72,7 @@ Each broker handles a portion of the Kafka workload.
 
 <img width="1623" height="874" alt="image" src="https://github.com/user-attachments/assets/3bcea75f-2920-4927-9fb9-81a444c18ec7" />
 
+<img width="1623" height="874" alt="image" src="https://github.com/user-attachments/assets/fec06124-a8b9-41a5-9f44-d93f337ccf89" />
 
 ---
 
