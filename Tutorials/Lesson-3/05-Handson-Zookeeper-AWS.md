@@ -161,122 +161,81 @@ So the quorum design becomes useless against an AZ failure.
 
 ---
 
-# 4. AWS Security Group + Actually Provisioning the 3 Nodes
+# 4. AWS Security Group + Actually Provisioning the 3 Nodes (AWS Console)
 
 The previous section described the *target* architecture. This section is
-the part that was missing before: the actual commands that create it. This
-uses the **AWS CLI v2** (`aws --version` to confirm it's installed and
-`aws configure` to confirm credentials/region are set) — every step also has
-a one-line AWS Console equivalent noted, if you'd rather click through the
-UI.
+the part that was missing before: the actual **AWS Management Console**
+click-path that creates it, end to end, with no CLI required.
 
 For a **learning lab**, use your account's **default VPC** — it already has
 one subnet per Availability Zone with auto-assigned public IPs, so you don't
 need to build a custom VPC just to run this lab. (Production would use
 private subnets — see the Production sections later in this doc.)
 
-## Step 4.1 — Pick a region and find your default VPC's subnets (1 per AZ)
+Sign in to the console and confirm your **Region** in the top-right corner
+first (e.g. Asia Pacific (Mumbai) `ap-south-1`) — every resource below must
+be created in that same Region.
 
-```bash
-export AWS_REGION=ap-south-1   # or whichever region you're using
-aws configure set region "$AWS_REGION"
+## Step 4.1 — Find your default VPC's subnets (1 per AZ)
 
-aws ec2 describe-subnets \
-  --filters "Name=default-for-az,Values=true" \
-  --query 'Subnets[].[SubnetId,AvailabilityZone,CidrBlock]' \
-  --output table
-```
-
-You should see 3 (or more) rows, one per AZ, e.g. `ap-south-1a`,
-`ap-south-1b`, `ap-south-1c`. **Note down 3 different Subnet IDs from 3
-different AZs** — you'll place ZK1/ZK2/ZK3 one per subnet in the next steps.
-Console equivalent: **VPC → Subnets**, filter to your default VPC.
+1. Open the **VPC console**: search "VPC" in the top search bar → **VPC**.
+2. In the left navigation pane, choose **Subnets**.
+3. Use the filter box to search for your **default VPC** (it's labeled
+   `Default VPC` if you look under **Your VPCs**, or you can just look at
+   the **VPC ID** column — the default VPC's subnets are the ones already
+   present with no setup on your part).
+4. You should see one subnet per Availability Zone (e.g. one in
+   `ap-south-1a`, one in `ap-south-1b`, one in `ap-south-1c`). **Note the
+   Availability Zone column for 3 different subnets** — you'll pick one AZ
+   per ZooKeeper node when launching instances in Step 4.4.
 
 ## Step 4.2 — Create the SSH key pair
 
-```bash
-aws ec2 create-key-pair \
-  --key-name kafka-lab \
-  --query 'KeyMaterial' \
-  --output text > kafka-lab.pem
+1. Open the **EC2 console**: search "EC2" in the top search bar → **EC2**.
+2. In the left navigation pane, under **Network & Security**, choose
+   **Key Pairs**.
+3. Choose **Create key pair**.
+4. **Name:** `kafka-lab`
+5. **Key pair type:** RSA
+6. **Private key file format:** `.pem` (use `.ppk` instead only if you're
+   connecting from PuTTY on Windows rather than a Linux/macOS/WSL terminal)
+7. Choose **Create key pair** — your browser downloads `kafka-lab.pem`
+   automatically. **This is the only time you can get this file** — save it
+   somewhere safe (e.g. `~/kafka-lab.pem`).
+8. Back in your terminal, restrict its permissions (required for SSH to
+   accept it):
+   ```bash
+   chmod 400 ~/kafka-lab.pem
+   ```
 
-chmod 400 kafka-lab.pem
-```
+## Step 4.3 — Create the Security Group
 
-Console equivalent: **EC2 → Key Pairs → Create key pair** (download the
-`.pem`, then `chmod 400` it locally the same way).
+1. Still in the **EC2 console**, left navigation pane → under
+   **Network & Security**, choose **Security Groups**.
+2. Choose **Create security group**.
+3. **Security group name:** `zookeeper-sg`
+4. **Description:** `ZooKeeper 3-node quorum lab`
+5. **VPC:** select your **default VPC** (same one from Step 4.1).
+6. Under **Inbound rules**, choose **Add rule** once for each row below:
 
-## Step 4.3 — Look up the current Ubuntu 24.04 LTS AMI ID
+   | Type            | Port range | Source                                  |
+   | --------------- | ---------- | ---------------------------------------- |
+   | SSH             | 22         | **My IP** (auto-fills your current IP)   |
+   | Custom TCP      | 2181       | **Custom** → search/select `zookeeper-sg` itself |
+   | Custom TCP      | 2888       | **Custom** → search/select `zookeeper-sg` itself |
+   | Custom TCP      | 3888       | **Custom** → search/select `zookeeper-sg` itself |
+   | Custom TCP      | 8080       | **Custom** → search/select `zookeeper-sg` itself |
 
-AMI IDs are region-specific and change over time as Canonical publishes
-updates, so don't hardcode one — resolve it dynamically via AWS's public SSM
-parameter for the current Ubuntu 24.04 (Noble) image:
-
-```bash
-AMI_ID=$(aws ssm get-parameters \
-  --names /aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id \
-  --query 'Parameters[0].Value' --output text)
-
-echo "$AMI_ID"
-```
-
-Canonical publishes and documents this exact SSM parameter path for
-resolving the latest Ubuntu AMI in any region. ([Ubuntu on AWS docs][12])
-
-## Step 4.4 — Create the Security Group
-
-```bash
-VPC_ID=$(aws ec2 describe-vpcs \
-  --filters "Name=isDefault,Values=true" \
-  --query 'Vpcs[0].VpcId' --output text)
-
-SG_ID=$(aws ec2 create-security-group \
-  --group-name zookeeper-sg \
-  --description "ZooKeeper 3-node quorum lab" \
-  --vpc-id "$VPC_ID" \
-  --query 'GroupId' --output text)
-
-echo "$SG_ID"
-```
-
-## Inbound rules
-
-| Port | Source              | Why                      |
-| ---: | ------------------- | ------------------------ |
-|   22 | Your IP             | SSH                      |
-| 2181 | Kafka/client SG     | Client connections       |
-| 2888 | `zookeeper-sg`      | Peer communication       |
-| 3888 | `zookeeper-sg`      | Leader election          |
-| 8080 | Admin/monitoring SG | AdminServer, if required |
-
-AWS Security Groups can reference another Security Group as the source, allowing private-IP communication between associated instances. ([AWS Documentation][3])
-
-Apply the table above (for the lab, source SG for 2181/8080 can also just be
-`$SG_ID` itself, since you don't have a separate Kafka/monitoring SG yet):
-
-```bash
-MY_IP=$(curl -s https://checkip.amazonaws.com)
-
-aws ec2 authorize-security-group-ingress --group-id "$SG_ID" \
-  --protocol tcp --port 22 --cidr "${MY_IP}/32"
-
-aws ec2 authorize-security-group-ingress --group-id "$SG_ID" \
-  --protocol tcp --port 2181 --source-group "$SG_ID"
-
-aws ec2 authorize-security-group-ingress --group-id "$SG_ID" \
-  --protocol tcp --port 2888 --source-group "$SG_ID"
-
-aws ec2 authorize-security-group-ingress --group-id "$SG_ID" \
-  --protocol tcp --port 3888 --source-group "$SG_ID"
-
-aws ec2 authorize-security-group-ingress --group-id "$SG_ID" \
-  --protocol tcp --port 8080 --source-group "$SG_ID"
-```
-
-Console equivalent: **EC2 → Security Groups → Create security group**, then
-add each inbound rule (for 2181/2888/3888/8080, set **Source** to "Custom"
-and pick the `zookeeper-sg` group itself — this is the "SG-to-SG
-referencing" the table above describes).
+   For the **Source** field on the 2181/2888/3888/8080 rows: choose
+   **Custom**, then start typing `zookeeper-sg` in the box — the console
+   will offer to let the group reference **itself** as the source (this is
+   what "SG-to-SG referencing" means, and it's exactly the mechanism
+   described in the table/diagram below). AWS Security Groups can reference
+   another Security Group — or themselves — as a rule's source, allowing
+   private-IP communication between associated instances without opening
+   ports to the public internet. ([AWS Documentation][3])
+7. Leave **Outbound rules** at the default (all traffic allowed).
+8. Choose **Create security group**.
 
 ### Recommended
 
@@ -301,49 +260,50 @@ ZK SG
 
 ZooKeeper is expected to operate in a trusted environment and Apache explicitly recommends deploying it behind a firewall. ([Apache ZooKeeper][4])
 
-## Step 4.5 — Launch the 3 EC2 instances (one per AZ subnet)
+## Step 4.4 — Launch the 3 EC2 instances (repeat this whole step 3 times: ZK1, ZK2, ZK3)
 
-Using the 3 Subnet IDs from Step 4.1 (`SUBNET_A`, `SUBNET_B`, `SUBNET_C`)
-and the `$AMI_ID`, `$SG_ID`, `kafka-lab` key pair from above:
+For **each** of ZK1, ZK2, ZK3:
 
-```bash
-SUBNET_A=subnet-xxxxxxxxAZA   # paste your real subnet IDs here
-SUBNET_B=subnet-xxxxxxxxAZB
-SUBNET_C=subnet-xxxxxxxxAZC
+1. In the **EC2 console**, choose **Launch instance**.
+2. **Name and tags → Name:** enter `zk1` (then `zk2`, then `zk3` on the
+   next two runs).
+3. **Application and OS Images (Amazon Machine Image):** in the search box,
+   type `Ubuntu`, then choose **Ubuntu Server 24.04 LTS (HVM), SSD Volume
+   Type** — a **Quick Start** AMI, 64-bit (x86) architecture. AMI IDs are
+   region-specific and change as Canonical publishes updates, which is
+   exactly why you search/select it here instead of typing in a fixed AMI
+   ID — the console always resolves the current one for your Region for
+   you. ([Ubuntu on AWS docs][12])
+4. **Instance type:** `t3.small`.
+5. **Key pair (login):** choose the `kafka-lab` key pair you created in
+   Step 4.2.
+6. **Network settings** → choose **Edit** to expand it:
+   - **VPC:** your default VPC.
+   - **Subnet:** choose a **different** AZ's subnet for each of ZK1/ZK2/ZK3
+     (the 3 AZs you noted in Step 4.1) — this is what actually spreads the
+     3 nodes across Availability Zones for real fault tolerance.
+   - **Auto-assign public IP:** **Enable** (so you can SSH in directly —
+     this is on by default for default-VPC subnets, but confirm it here).
+   - **Firewall (security groups):** choose **Select existing security
+     group**, then pick `zookeeper-sg`.
+7. **Configure storage:** change the root volume from its default size to
+   **20 GiB**, type **gp3** (the default type is already gp3 on current
+   Ubuntu AMIs — just confirm the size).
+8. Leave **Advanced details** at its defaults.
+9. In the **Summary** panel on the right, confirm **Number of instances**
+   is `1`, then choose **Launch instance**.
+10. Repeat steps 1–9 two more times for the remaining two nodes, each time
+    picking a **different** subnet/AZ in step 6.
 
-for i in 1 2 3; do
-  case $i in
-    1) SUBNET=$SUBNET_A ;;
-    2) SUBNET=$SUBNET_B ;;
-    3) SUBNET=$SUBNET_C ;;
-  esac
+## Step 4.5 — Get each instance's public and private IPs
 
-  aws ec2 run-instances \
-    --image-id "$AMI_ID" \
-    --instance-type t3.small \
-    --key-name kafka-lab \
-    --security-group-ids "$SG_ID" \
-    --subnet-id "$SUBNET" \
-    --associate-public-ip-address \
-    --block-device-mappings 'DeviceName=/dev/sda1,Ebs={VolumeSize=20,VolumeType=gp3}' \
-    --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=zk${i}}]" \
-    --count 1
-done
-```
-
-Console equivalent: **EC2 → Launch instance**, repeated 3 times — Ubuntu
-Server 24.04 LTS AMI, `t3.small`, 20 GiB gp3, the `kafka-lab` key pair, the
-`zookeeper-sg` security group, one instance per AZ subnet, named `zk1`/
-`zk2`/`zk3` respectively.
-
-## Step 4.6 — Get each instance's public and private IPs
-
-```bash
-aws ec2 describe-instances \
-  --filters "Name=tag:Name,Values=zk1,zk2,zk3" "Name=instance-state-name,Values=running" \
-  --query 'Reservations[].Instances[].[Tags[?Key==`Name`].Value|[0],PublicIpAddress,PrivateIpAddress]' \
-  --output table
-```
+1. In the **EC2 console**, left navigation pane, choose **Instances**.
+2. You should see `zk1`, `zk2`, `zk3` in the list, each showing **Running**
+   once they've finished booting (this can take a minute or two).
+3. Select an instance's checkbox — the details pane below (or the
+   **Public IPv4 address** / **Private IPv4 addresses** columns, which you
+   can add via the column-settings gear icon if not already shown) gives
+   you both addresses. Repeat for all 3.
 
 **Write these down** — you'll use the public IPs to SSH in (Section 5) and
 the private IPs to build `/etc/hosts` on each node (Section 20). Unlike the
@@ -356,7 +316,7 @@ your real values, not the example ones, everywhere below.
 # 5. SSH Into the Servers
 
 `kafka-lab.pem` was already created and `chmod 400`'d in Step 4.2. Use the
-**public IPs** you captured in Step 4.6 (replace `<PUBLIC-IP>` below with the
+**public IPs** you captured in Step 4.5 (replace `<PUBLIC-IP>` below with the
 real value for each instance):
 
 ```bash
@@ -370,9 +330,12 @@ individually and it's easy to lose track of which shell is which).
 > First connection to a fresh instance: SSH will ask you to confirm the
 > host's fingerprint (`Are you sure you want to continue connecting
 > (yes/no/[fingerprint])?`) — type `yes`. If you instead get
-> `Connection timed out`, re-check Step 4.4's security group has port 22
-> open from your current IP (your IP may have changed since `$MY_IP` was
-> captured, especially on a home/mobile connection).
+> `Connection timed out`, re-check Step 4.3's security group: the SSH
+> rule's **Source** was set to **My IP** at creation time, which does
+> **not** auto-update — if your IP has changed since (common on
+> home/mobile connections), edit that inbound rule (**Security Groups →
+> zookeeper-sg → Edit inbound rules**) and choose **My IP** again to
+> refresh it.
 
 Architecture:
 
@@ -899,7 +862,7 @@ this section.) So for this lab, **`/etc/hosts` is required, not optional.**
 
 ## Add the entries — on all 3 nodes
 
-Using the **private IPs** you captured in Step 4.6, run this on **ZK1, ZK2,
+Using the **private IPs** you captured in Step 4.5, run this on **ZK1, ZK2,
 and ZK3** (all three get the exact same 3 lines):
 
 ```bash
@@ -911,7 +874,7 @@ EOF
 ```
 
 Replace `10.0.1.10` / `10.0.2.10` / `10.0.3.10` above with **your actual**
-private IPs from Step 4.6 before running this — they will not match these
+private IPs from Step 4.5 before running this — they will not match these
 illustrative values from Section 3's table.
 
 ## Verify
@@ -932,7 +895,7 @@ ping -c 2 zk3
 ```
 
 If `getent` resolves the name but `ping` hangs/fails, that's a Security
-Group problem, not a DNS problem — recheck Step 4.4 (2888/3888 must allow
+Group problem, not a DNS problem — recheck Step 4.3 (2888/3888 must allow
 `zookeeper-sg` as the *source*, referencing itself).
 
 > **Production note:** a private Route 53 hosted zone (e.g. `zk1.internal`,
@@ -2568,7 +2531,7 @@ After completing this lab, you should be able to perform all of these **without 
 AWS
 □ Find default VPC subnets (1 per AZ)
 □ Create a key pair
-□ Look up the current Ubuntu AMI via SSM
+□ Pick the correct Ubuntu 24.04 LTS AMI in the launch wizard
 □ Create the Security Group + rules
 □ Create 3 EC2 nodes, one per AZ subnet
 □ Retrieve public + private IPs
@@ -2759,42 +2722,31 @@ tear it down.
 
 ## Terminate the instances
 
-```bash
-IDS=$(aws ec2 describe-instances \
-  --filters "Name=tag:Name,Values=zk1,zk2,zk3" "Name=instance-state-name,Values=running,stopped" \
-  --query 'Reservations[].Instances[].InstanceId' --output text)
-
-aws ec2 terminate-instances --instance-ids $IDS
-```
-
-Console equivalent: **EC2 → Instances**, select `zk1`/`zk2`/`zk3` →
-**Instance state → Terminate instance**.
+1. Open the **EC2 console → Instances**.
+2. Select the checkboxes for `zk1`, `zk2`, and `zk3` (all three at once).
+3. **Instance state → Terminate instance** → confirm.
 
 ## Confirm they're gone (don't skip this — a stuck instance still bills)
 
-```bash
-aws ec2 describe-instances \
-  --filters "Name=tag:Name,Values=zk1,zk2,zk3" \
-  --query 'Reservations[].Instances[].[InstanceId,State.Name]' --output table
-```
-
-Wait until every row shows `terminated`.
+Watch the **Instance state** column for all three rows. Don't move on until
+every one shows **Terminated** (it briefly shows **Shutting-down** first).
 
 ## Delete the Security Group (only after all 3 instances are terminated)
 
-```bash
-aws ec2 delete-security-group --group-id "$SG_ID"
-```
+1. **EC2 console → Security Groups**.
+2. Select `zookeeper-sg`.
+3. **Actions → Delete security groups** → confirm.
 
-If this errors with `DependencyViolation`, an instance is still using it —
-double-check the previous step actually completed.
+If this fails with an error like *"resource has a dependent object"* /
+`DependencyViolation`, an instance is still using it — go back and confirm
+all 3 instances actually reached **Terminated** first.
 
 ## Delete the key pair (optional — cheap to keep, but tidy if you're done)
 
-```bash
-aws ec2 delete-key-pair --key-name kafka-lab
-rm -f kafka-lab.pem
-```
+1. **EC2 console → Key Pairs**.
+2. Select `kafka-lab`.
+3. **Actions → Delete** → confirm.
+4. Locally, you can also remove the downloaded file: `rm -f kafka-lab.pem`.
 
 ## What you do NOT need to clean up
 
