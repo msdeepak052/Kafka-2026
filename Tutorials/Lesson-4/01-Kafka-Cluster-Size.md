@@ -78,6 +78,11 @@ Kafka can continue serving
 
 This is one of the major reasons Kafka clusters are normally deployed with multiple brokers.
 
+<img width="1617" height="916" alt="image" src="https://github.com/user-attachments/assets/96f0372a-68c3-41c2-8833-b6b88ba220f7" />
+
+<img width="1617" height="916" alt="image" src="https://github.com/user-attachments/assets/6bb625cd-fdb0-4287-93b5-5891e41524e4" />
+
+
 ---
 
 # 3. Analogy
